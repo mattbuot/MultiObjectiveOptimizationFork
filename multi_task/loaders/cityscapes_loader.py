@@ -1,16 +1,15 @@
 # Adapted from https://github.com/meetshah1995/pytorch-semseg/blob/master/ptsemseg/loader/cityscapes_loader.py
 
 import os
-import torch
-import numpy as np
-import scipy.misc as m
-
-from torch.utils import data
-
-from loaders.loader_utils import recursive_glob
-from loaders.segmentation_augmentations import *
 
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
+from imageio import imread
+from loaders.loader_utils import recursive_glob
+from loaders.segmentation_augmentations import *
+from PIL import Image
+from torch.utils import data
 
 
 class CITYSCAPES(data.Dataset):
@@ -87,7 +86,7 @@ class CITYSCAPES(data.Dataset):
         self.class_map = dict(zip(self.valid_classes, range(19)))
 
         self.DEPTH_STD = 2729.0680031169923
-        self.DEPTH_MEAN = np.load('depth_mean.npy')
+        #self.DEPTH_MEAN = np.load('depth_mean.npy')
 
         if len(self.files[self.split_text]) < 2:
             raise Exception("No files for split=[%s] found in %s" % (self.split_text, self.images_base))
@@ -113,12 +112,13 @@ class CITYSCAPES(data.Dataset):
         depth_path = os.path.join(self.depth_base,
                                      img_path.split(os.sep)[-2],
                                      os.path.basename(img_path)[:-15] + 'disparity.png')  
-        img = m.imread(img_path)
-        lbl = m.imread(lbl_path)
-        ins = m.imread(instance_path)
-        depth = np.array(m.imread(depth_path) , dtype=np.float32)
+        img = imread(img_path)
+        lbl = imread(lbl_path)
+        ins = imread(instance_path)
+        depth = np.array(imread(depth_path) , dtype=np.float32)
 
-        depth[depth!=0] = (depth[depth!=0] - self.DEPTH_MEAN[depth!=0]) / self.DEPTH_STD
+        depth_mean = np.mean([depth!=0])
+        depth[depth!=0] = (depth[depth!=0] - depth_mean) / self.DEPTH_STD
 
         if self.augmentations is not None:
             img, lbl, ins, depth = self.augmentations(np.array(img, dtype=np.uint8), np.array(lbl, dtype=np.uint8), np.array(ins, dtype=np.int32), np.array(depth, dtype=np.float32))
@@ -140,9 +140,8 @@ class CITYSCAPES(data.Dataset):
         :param lbl:
         """
         img = img[:, :, ::-1]
-        img = img.astype(np.float64)
-        img -= self.mean
-        img = m.imresize(img, (self.img_size[0], self.img_size[1]))
+        img = img.astype(np.uint8)
+        img = np.array(Image.fromarray(img).resize((self.img_size[0], self.img_size[1])))
         # Resize scales images from 0 to 255, thus we need
         # to divide by 255.0
         img = img.astype(float) / 255.0
@@ -151,16 +150,16 @@ class CITYSCAPES(data.Dataset):
 
         classes = np.unique(lbl)
         lbl = lbl.astype(float)
-        lbl = m.imresize(lbl, (int(self.img_size[0]/8), int(self.img_size[1]/8)), 'nearest', mode='F') # TODO(ozan) /8 is quite hacky
+        lbl = np.array(Image.fromarray(lbl).convert(mode='F').resize((int(self.img_size[0]/8), int(self.img_size[1]/8)), resample=Image.NEAREST)) # TODO(ozan) /8 is quite hacky
         lbl = lbl.astype(int)
 
         ins_y = ins_y.astype(float)
-        ins_y = m.imresize(ins_y, (int(self.img_size[0]/8), int(self.img_size[1]/8)), 'nearest', mode='F')
+        ins_y = np.array(Image.fromarray(ins_y).convert(mode='F').resize((int(self.img_size[0]/8), int(self.img_size[1]/8)), resample=Image.NEAREST))
 
         ins_x = ins_x.astype(float)
-        ins_x = m.imresize(ins_x, (int(self.img_size[0]/8), int(self.img_size[1]/8)), 'nearest', mode='F')
+        ins_x = np.array(Image.fromarray(ins_x).convert(mode='F').resize((int(self.img_size[0]/8), int(self.img_size[1]/8)), resample=Image.NEAREST))
 
-        depth = m.imresize(depth, (int(self.img_size[0]/8), int(self.img_size[1]/8)), 'nearest', mode='F')
+        depth = np.array(Image.fromarray(depth).convert(mode='F').resize((int(self.img_size[0]/8), int(self.img_size[1]/8)), resample=Image.NEAREST))
         depth = np.expand_dims(depth, axis=0)
         #if not np.all(classes == np.unique(lbl)):
         #    print("WARN: resizing labels yielded fewer classes")
@@ -224,8 +223,8 @@ class CITYSCAPES(data.Dataset):
         return out_ymap, out_xmap
 
 if __name__ == '__main__':
-    import torchvision
     import matplotlib.pyplot as plt
+    import torchvision
 
     augmentations = Compose([RandomRotate(10),
                              RandomHorizontallyFlip()])

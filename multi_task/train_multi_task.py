@@ -1,35 +1,31 @@
-import sys
-import torch
-import click
-import json
 import datetime
+import json
+import sys
+import types
 from timeit import default_timer as timer
 
+import click
+import datasets
+import losses
+import metrics
+import model_selector
 import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision
+from min_norm_solvers import MinNormSolver, gradient_normalizers
+from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.utils import data
-import torchvision
-import types
-
 from tqdm import tqdm
-from tensorboardX import SummaryWriter
-
-import losses
-import datasets
-import metrics
-import model_selector
-from min_norm_solvers import MinNormSolver, gradient_normalizers
 
 NUM_EPOCHS = 100
 
 @click.command()
-@click.option('--param_file', default='params.json', help='JSON parameters file')
+@click.option('--param_file', default='sample.json', help='JSON parameters file')
 def train_multi_task(param_file):
-    with open('configs.json') as config_params:
+    with open('../configs.json') as config_params:
         configs = json.load(config_params)
 
     with open(param_file) as json_params:
@@ -42,7 +38,7 @@ def train_multi_task(param_file):
             continue
         exp_identifier+= ['{}={}'.format(key,val)]
 
-    exp_identifier = '|'.join(exp_identifier)
+    exp_identifier = str(hash('|'.join(exp_identifier)))
     params['exp_id'] = exp_identifier
 
     writer = SummaryWriter(log_dir='runs/{}_{}'.format(params['exp_id'], datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")))
@@ -91,7 +87,7 @@ def train_multi_task(param_file):
             n_iter += 1
             # First member is always images
             images = batch[0]
-            images = Variable(images.cuda())
+            images = Variable(images)#.cuda())
 
             labels = {}
             # Read all targets of all tasks
@@ -99,7 +95,7 @@ def train_multi_task(param_file):
                 if t not in tasks:
                     continue
                 labels[t] = batch[i+1]
-                labels[t] = Variable(labels[t].cuda())
+                labels[t] = Variable(labels[t])#.cuda())
 
             # Scaling the loss functions based on the algorithm choice
             loss_data = {}
@@ -199,14 +195,16 @@ def train_multi_task(param_file):
 
         num_val_batches = 0
         for batch_val in val_loader:
-            val_images = Variable(batch_val[0].cuda(), volatile=True)
+            val_images = Variable(batch_val[0]#.cuda()
+                                  , volatile=True)
             labels_val = {}
 
             for i, t in enumerate(all_tasks):
                 if t not in tasks:
                     continue
                 labels_val[t] = batch_val[i+1]
-                labels_val[t] = Variable(labels_val[t].cuda(), volatile=True)
+                labels_val[t] = Variable(labels_val[t]#.cuda()
+                                         , volatile=True)
 
             val_rep, _ = model['rep'](val_images, None)
             for t in tasks:

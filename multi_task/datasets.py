@@ -1,9 +1,9 @@
 import torch
-from torchvision import transforms
-from loaders.multi_mnist_loader import MNIST
-from loaders.cityscapes_loader import CITYSCAPES
-from loaders.segmentation_augmentations import *
 from loaders.celeba_loader import CELEBA
+from loaders.cityscapes_loader import CITYSCAPES
+from loaders.multi_mnist_loader import MNIST
+from loaders.segmentation_augmentations import *
+from torchvision import transforms
 
 # Setup Augmentations
 cityscapes_augmentations= Compose([RandomRotate(10),

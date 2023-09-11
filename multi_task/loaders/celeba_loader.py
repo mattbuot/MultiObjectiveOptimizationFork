@@ -1,10 +1,11 @@
+import glob
 import os
-import torch
+import re
+
 import numpy as np
 import scipy.misc as m
-import re
-import glob
-
+import torch
+from imageio import imread
 from torch.utils import data
 
 
@@ -75,7 +76,7 @@ class CELEBA(data.Dataset):
         """
         img_path = self.files[self.split][index].rstrip()
         label = self.labels[self.split][index]
-        img = m.imread(img_path)
+        img = imread(img_path)
 
         if self.augmentations is not None:
             img = self.augmentations(np.array(img, dtype=np.uint8))
@@ -102,8 +103,8 @@ class CELEBA(data.Dataset):
         return img
 
 if __name__ == '__main__':
-    import torchvision
     import matplotlib.pyplot as plt
+    import torchvision
 
 
     local_path = 'CELEB_A_PATH'
