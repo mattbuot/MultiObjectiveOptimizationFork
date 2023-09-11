@@ -15,7 +15,7 @@ class MultiLeNetR(nn.Module):
     def dropout2dwithmask(self, x, mask):
         channel_size = x.shape[1]
         if mask is None:
-            mask = Variable(torch.bernoulli(torch.ones(1,channel_size,1,1)*0.5)).cuda())
+            mask = Variable(torch.bernoulli(torch.ones(1,channel_size,1,1)*0.5)).cuda()
         mask = mask.expand(x.shape)
         return mask
 

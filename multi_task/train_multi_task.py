@@ -87,7 +87,7 @@ def train_multi_task(param_file):
             n_iter += 1
             # First member is always images
             images = batch[0]
-            images = Variable(images).cuda())
+            images = Variable(images).cuda()
 
             labels = {}
             # Read all targets of all tasks
@@ -95,7 +95,7 @@ def train_multi_task(param_file):
                 if t not in tasks:
                     continue
                 labels[t] = batch[i+1]
-                labels[t] = Variable(labels[t]).cuda())
+                labels[t] = Variable(labels[t]).cuda()
 
             # Scaling the loss functions based on the algorithm choice
             loss_data = {}
