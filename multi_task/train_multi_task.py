@@ -5,7 +5,7 @@ import types
 from timeit import default_timer as timer
 
 import click
-import datasets
+import datasets_local as datasets
 import losses
 import metrics
 import model_selector
