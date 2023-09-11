@@ -13,17 +13,17 @@ def get_model(params):
         model['rep'] = MultiLeNetR()
         if params['parallel']:
             model['rep'] = nn.DataParallel(model['rep'])
-        model['rep']#.cuda()
+        model['rep'].cuda()
         if 'L' in params['tasks']:
             model['L'] = MultiLeNetO()
             if params['parallel']:
                 model['L'] = nn.DataParallel(model['L'])
-            model['L']#.cuda()
+            model['L'].cuda()
         if 'R' in params['tasks']:
             model['R'] = MultiLeNetO()
             if params['parallel']:
                 model['R'] = nn.DataParallel(model['R'])
-            model['R']#.cuda()
+            model['R'].cuda()
         return model
 
     if 'cityscapes' in data:
@@ -33,22 +33,22 @@ def get_model(params):
         #model['rep'].init_vgg16_params(vgg16)
         if params['parallel']:
             model['rep'] = nn.DataParallel(model['rep'])
-        model['rep']#.cuda()
+        model['rep'].cuda()
         if 'S' in params['tasks']:
             model['S'] = SegmentationDecoder(num_class=19, task_type='C')
             if params['parallel']:
                 model['S'] = nn.DataParallel(model['S'])
-            model['S']#.cuda()
+            model['S'].cuda()
         if 'I' in params['tasks']:
             model['I'] = SegmentationDecoder(num_class=2, task_type='R')
             if params['parallel']:
                 model['R'] = nn.DataParallel(model['R'])
-            model['I']#.cuda()
+            model['I'].cuda()
         if 'D' in params['tasks']:
             model['D'] = SegmentationDecoder(num_class=1, task_type='R')
             if params['parallel']:
                 model['D'] = nn.DataParallel(model['D'])
-            model['D']#.cuda()
+            model['D'].cuda()
         return model
 
     if 'celeba' in data:
@@ -56,11 +56,11 @@ def get_model(params):
         model['rep'] = ResNet(BasicBlock, [2,2,2,2])
         if params['parallel']:
             model['rep'] = nn.DataParallel(model['rep'])
-        model['rep']#.cuda()
+        model['rep'].cuda()
         for t in params['tasks']:
             model[t] = FaceAttributeDecoder()
             if params['parallel']:
                 model[t] = nn.DataParallel(model[t])
-            model[t]#.cuda()
+            model[t].cuda()
         return model
 
