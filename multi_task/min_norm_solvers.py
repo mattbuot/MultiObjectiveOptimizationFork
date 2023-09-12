@@ -52,6 +52,8 @@ class MinNormSolver:
                     for k in range(len(vecs[i])):
                         dps[(j, j)] += torch.mul(vecs[j][k], vecs[j][k]).sum().data.cpu()
                 c,d = MinNormSolver._min_norm_element_from2(dps[(i,i)], dps[(i,j)], dps[(j,j)])
+                if isinstance(dmin, torch.Tensor):
+                    dmin = dmin.numpy()
                 if d < dmin:
                     dmin = d
                     sol = [(i,j),c,d]
