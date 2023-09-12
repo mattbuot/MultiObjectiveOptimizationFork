@@ -54,6 +54,8 @@ class MinNormSolver:
                 c,d = MinNormSolver._min_norm_element_from2(dps[(i,i)], dps[(i,j)], dps[(j,j)])
                 if isinstance(dmin, torch.Tensor):
                     dmin = dmin.numpy()
+                if isinstance(d, torch.Tensor):
+                    d = d.numpy()
                 if d < dmin:
                     dmin = d
                     sol = [(i,j),c,d]
