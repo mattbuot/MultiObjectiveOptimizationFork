@@ -80,9 +80,9 @@ class MinNormSolver:
         
         t = 1
         if len(tm1[tm1>1e-7]) > 0:
-            t = (tm1[tm1>1e-7]).min()
+            t = (tm1[tm1>1e-7]).min().item()
         if len(tm2[tm2>1e-7]) > 0:
-            t = min(t, (tm2[tm2>1e-7]).min())
+            t = min(t, (tm2[tm2>1e-7]).min().item())
 
         next_point = proj_grad*t + cur_val
         next_point = MinNormSolver._projection2simplex(next_point)
