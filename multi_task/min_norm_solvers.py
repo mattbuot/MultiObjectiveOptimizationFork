@@ -27,7 +27,7 @@ class MinNormSolver:
         # Case: Fig 1, second column
         gamma = -1.0 * ( (v1v2 - v2v2) / (v1v1+v2v2 - 2*v1v2) )
         cost = v2v2 + gamma*(v1v2 - v2v2)
-        return gamma, cost
+        return gamma.numpy(), cost.numpy()
 
     def _min_norm_2d(vecs, dps):
         """
