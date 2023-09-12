@@ -64,7 +64,7 @@ class MinNormSolver:
         m = len(y)
         sorted_y = np.flip(np.sort(y), axis=0)
         tmpsum = 0.0
-        tmax_f = (np.sum(y) - 1.0)/m
+        tmax_f = (y.sum().item() - 1.0)/m
         for i in range(m-1):
             tmpsum+= sorted_y[i]
             tmax = (tmpsum - 1)/ (i+1.0)
@@ -80,9 +80,9 @@ class MinNormSolver:
         
         t = 1
         if len(tm1[tm1>1e-7]) > 0:
-            t = np.min(tm1[tm1>1e-7])
+            t = (tm1[tm1>1e-7]).min()
         if len(tm2[tm2>1e-7]) > 0:
-            t = min(t, np.min(tm2[tm2>1e-7]))
+            t = min(t, (tm2[tm2>1e-7]).min())
 
         next_point = proj_grad*t + cur_val
         next_point = MinNormSolver._projection2simplex(next_point)
@@ -183,13 +183,13 @@ def gradient_normalizers(grads, losses, normalization_type):
     gn = {}
     if normalization_type == 'l2':
         for t in grads:
-            gn[t] = np.sqrt(np.sum([gr.pow(2).sum().data.cpu() for gr in grads[t]]))
+            gn[t] = np.sqrt(([gr.pow(2).sum().data.cpu() for gr in grads[t]]).sum().item())
     elif normalization_type == 'loss':
         for t in grads:
             gn[t] = losses[t]
     elif normalization_type == 'loss+':
         for t in grads:
-            gn[t] = losses[t] * np.sqrt(np.sum([gr.pow(2).sum().data.cpu() for gr in grads[t]]))
+            gn[t] = losses[t] * np.sqrt(([gr.pow(2).sum().data.cpu() for gr in grads[t]]).sum().item())
     elif normalization_type == 'none':
         for t in grads:
             gn[t] = 1.0
